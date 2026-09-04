@@ -36,14 +36,28 @@ theorem one_mem_coreStateSet [DecidableEq α]
   apply mem_coreStateSet
   exact mem_corePoints_of_separating (one_mem_allActionStates g.toWord)
 
-theorem freeGroup_subgroup_separable_proved
+/-! A finite based permutation representation separates an element from a
+finitely generated subgroup when the subgroup acts trivially on the chosen
+base state but the element does not.  This is the explicit finite quotient
+surface behind subgroup separability; the older existential finite-index
+subgroup statement is derived from its basepoint stabilizer below. -/
+
+structure FinitePermutationSeparator
+    (H : Subgroup (FreeGroup α)) (g : FreeGroup α) where
+  State : Type u
+  [stateFintype : Fintype State]
+  representation : FreeGroup α →* Equiv.Perm State
+  base : State
+  fixes_subgroup : ∀ h : H, representation (h : FreeGroup α) base = base
+  separates : representation g base ≠ base
+
+theorem freeGroup_finite_permutation_separator_proved
     {α : Type*} [Finite α]
     (H : Subgroup (FreeGroup α))
     [Group.FG H]
     (g : FreeGroup α)
     (hg : g ∉ H) :
-    ∃ K : Subgroup (FreeGroup α),
-      H ≤ K ∧ K.index ≠ 0 ∧ g ∉ K := by
+    Nonempty (FinitePermutationSeparator H g) := by
   classical
   letI : DecidableEq α := Classical.decEq α
   obtain ⟨S, hS⟩ := (Group.fg_iff_subgroup_fg H).mp (inferInstance : Group.FG H)
@@ -233,17 +247,65 @@ theorem freeGroup_subgroup_separable_proved
       (Quotient.mk'' g : LeftCosetQuotient H) := by
     have h := word_action g.toWord hcore_g
     simpa [wordValue_eq_freeGroup_mk, FreeGroup.mk_toWord] using h
+  have hHfix : ∀ h : H, rho (h : FreeGroup α) base = base := by
+    intro h
+    have hmem : (h : FreeGroup α) ∈ K := hHK h.property
+    have hfix := (MulAction.mem_stabilizer_iff.mp hmem)
+    change rho (h : FreeGroup α) base = base at hfix
+    exact hfix
+  have hg_notfix : rho g base ≠ base := by
+    intro hfix
+    apply hg
+    have hfix' : ((rho g) base : A).1 = q0 := by
+      change (rho g) base = base at hfix
+      exact congrArg Subtype.val hfix
+    have hquot : (Quotient.mk'' g : LeftCosetQuotient H) = q0 :=
+      hg_action.symm.trans hfix'
+    have hquot' : (Quotient.mk'' g : LeftCosetQuotient H) =
+        Quotient.mk'' (1 : FreeGroup α) := by
+      simpa [q0] using hquot
+    exact (leftCoset_mk_eq_one_iff H g).1 hquot'
+  exact ⟨{
+    State := A
+    representation := rho
+    base := base
+    fixes_subgroup := hHfix
+    separates := hg_notfix
+  }⟩
+
+/-! The original LERF statement is a direct corollary of the explicit
+separator.  Its subgroup is the stabilizer of the displayed finite action's
+base state, so the finite-index witness is still tied to the actual
+permutation representation. -/
+
+theorem freeGroup_subgroup_separable_proved
+    {α : Type*} [Finite α]
+    (H : Subgroup (FreeGroup α))
+    [Group.FG H]
+    (g : FreeGroup α)
+    (hg : g ∉ H) :
+    ∃ K : Subgroup (FreeGroup α),
+      H ≤ K ∧ K.index ≠ 0 ∧ g ∉ K := by
+  obtain ⟨s⟩ := freeGroup_finite_permutation_separator_proved H g hg
+  letI : Fintype s.State := s.stateFintype
+  letI : MulAction (FreeGroup α) s.State :=
+    MulAction.compHom s.State s.representation
+  let K : Subgroup (FreeGroup α) :=
+    MulAction.stabilizer (FreeGroup α) s.base
+  have hHK : H ≤ K := by
+    intro h hmem
+    apply (MulAction.mem_stabilizer_iff).2
+    change s.representation (h : FreeGroup α) s.base = s.base
+    exact s.fixes_subgroup ⟨h, hmem⟩
+  have hKindex : K.index ≠ 0 := by
+    dsimp [K]
+    rw [MulAction.index_stabilizer]
+    exact Nat.ne_of_gt ((Set.ncard_pos (s := MulAction.orbit
+      (FreeGroup α) s.base)).2 (MulAction.nonempty_orbit s.base))
   refine ⟨K, hHK, hKindex, ?_⟩
   intro hgK
   have hfix := (MulAction.mem_stabilizer_iff.mp hgK)
-  have hfix' : ((rho g) base : A).1 = q0 := by
-    change (rho g) base = base at hfix
-    exact congrArg Subtype.val hfix
-  have hquot : (Quotient.mk'' g : LeftCosetQuotient H) = q0 :=
-    hg_action.symm.trans hfix'
-  have hquot' : (Quotient.mk'' g : LeftCosetQuotient H) =
-      Quotient.mk'' (1 : FreeGroup α) := by
-    simpa [q0] using hquot
-  exact hg ((leftCoset_mk_eq_one_iff H g).1 hquot')
+  change s.representation g s.base = s.base at hfix
+  exact s.separates hfix
 
 end MarshallHall

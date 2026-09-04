@@ -1,0 +1,10 @@
+{
+  "challenge_module": "LERFChallenge",
+  "solution_module": "LERFSolution",
+  "theorem_names": [
+    "LERFChallenge.freeGroup_finite_permutation_separator"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}

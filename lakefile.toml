@@ -1,6 +1,6 @@
 name = "MarshallHallTheorem"
 version = "0.1.0"
-defaultTargets = ["MarshallHall", "Challenge", "Solution"]
+defaultTargets = ["MarshallHall", "Challenge", "Solution", "LERFChallenge", "LERFSolution"]
 
 [[require]]
 name = "mathlib"
@@ -18,3 +18,11 @@ roots = ["Challenge"]
 [[lean_lib]]
 name = "Solution"
 roots = ["Solution"]
+
+[[lean_lib]]
+name = "LERFChallenge"
+roots = ["LERFChallenge"]
+
+[[lean_lib]]
+name = "LERFSolution"
+roots = ["LERFSolution"]

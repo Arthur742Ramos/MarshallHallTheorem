@@ -17,7 +17,24 @@ condition `K.index ≠ 0`, and an explicit equivalence
 inclusion. Thus the formal statement records the free-factor conclusion, not
 merely an abstract isomorphism with some unspecified subgroup.
 
-The same development proves the subgroup-separability (LERF) consequence:
+The same development also exposes a stronger, standalone finite-separator
+statement:
+
+```lean
+theorem freeGroup_finite_permutation_separator
+    {α : Type*} [Finite α]
+    (H : Subgroup (FreeGroup α)) [Group.FG H]
+    (g : FreeGroup α) (hg : g ∉ H) :
+    Nonempty (MarshallHall.FinitePermutationSeparator H g)
+```
+
+Here `MarshallHall.FinitePermutationSeparator H g` contains a finite state
+type, a homomorphism
+`FreeGroup α →* Equiv.Perm State`, a base state fixed by every element of
+`H`, and the fact that `g` moves that base state. This is the concrete finite
+permutation representation, rather than only an abstract finite-index
+existence claim. Its basepoint stabilizer immediately gives the usual
+subgroup-separability (LERF) consequence:
 
 ```lean
 theorem freeGroup_subgroup_separable
@@ -32,14 +49,13 @@ The proof is a finite-state version of the covering-graph argument. A finite
 generating set for `H` is extracted from `Group.FG H`. The implementation
 enumerates every suffix state of those generators and of `g`, viewed in the
 left-coset quotient by `H`. Each generator gives a partial permutation on this
-finite core. `Equiv.extendSubtype` completes that partial permutation to a
-permutation of the finite state set. The orbit of the base state is the
-connected core, and a geodesic spanning tree supplies a free basis. The
-subgroup generators retract to the basis elements supported in the finite
-core; this proves that `H` is a free factor of the stabilizer. Including the
-suffix states of a separating word gives the LERF theorem as well.
+finite core, and `Equiv.extendSubtype` completes it to a permutation of the
+finite state set. The constructed representation fixes the base state on `H`
+and moves it under `g`; taking the basepoint stabilizer yields the finite-index
+separator. The finite-core spanning-tree machinery used by the neighboring
+Hall theorem remains available as a separate supporting layer.
 
-The public Challenge is intentionally tiny and Mathlib-only. The checked
+The public Challenges are intentionally tiny and Mathlib-only. The checked
 finite-core construction is in the `MarshallHall/` modules.
 
 ## Additional rank result
@@ -105,14 +121,18 @@ contraction are split into `GrushkoUnfold.lean`, `GrushkoRemove.lean`, and
 
 ## Repository map
 
-- `Challenge.lean` is the closure-safe Palomar statement surface.
-- `Solution.lean` connects that surface to the checked implementation.
+- `Challenge.lean` is the closure-safe Palomar statement surface for Hall and
+  Grushko.
+- `Solution.lean` connects that surface to the checked Hall/Grushko
+  implementation.
+- `LERFChallenge.lean` and `LERFSolution.lean` are the standalone finite-
+  permutation-separator surface and its checked solution.
 - `MarshallHall/PartialAction.lean` defines the left-coset action and finite
   partial-action extension lemmas.
 - `MarshallHall/FiniteCore.lean` enumerates reduced-word suffix states and
   proves their finite-core membership properties.
 - `MarshallHall/Separation.lean` completes the finite actions and proves the
-  LERF theorem.
+  explicit finite-permutation separator and its LERF stabilizer corollary.
 - `MarshallHall/GraphBasis.lean` builds the labelled Schreier graph and its
   spanning-tree free basis.
 - `MarshallHall/Completion.lean` defines the good finite core and its
@@ -161,7 +181,10 @@ contraction are split into `GrushkoUnfold.lean`, `GrushkoRemove.lean`, and
 - `MarshallHall/GrushkoFull.lean` reroots minimal null paths, applies the
   complete reduction at every nonterminal stage, and proves the arbitrary-
   factor Grushko--Neumann theorem by strong induction.
-- `comparator.json` records the exact Challenge/Solution correspondence.
+- `comparator.json` records the exact Hall/Grushko Challenge/Solution
+  correspondence.
+- `lerf-comparator.json` records the separate Comparator correspondence for
+  the explicit finite-separator result.
 - `formalization.yaml` records provenance, scope, and the relationship between
   the Hall, LERF, and Grushko results.
 
@@ -172,14 +195,17 @@ The project is pinned to Lean 4.32.0 and Mathlib v4.32.0.
 ```text
 lake build
 lake env lean --src-deps Challenge.lean
+lake env lean --src-deps LERFChallenge.lean
 ruby scripts/validate-formalization.rb
 ./scripts/verify-comparator.sh
+./scripts/verify-comparator.sh lerf-comparator.json
 ```
 
 The Challenge contains one deliberate proof hole. The Solution and the
 implementation library contain no proof holes or custom axioms.
 
-The current Palomar Challenge/Solution surface selects the strengthened Hall
+The existing Palomar Challenge/Solution surface selects the strengthened Hall
 free-factor theorem and the arbitrary-factor Grushko--Neumann rank theorem.
-The LERF result remains proved and exported by the library root
-`MarshallHall.lean`.
+The separate `lerf-comparator.json` surface selects the explicit finite
+permutation separator; both it and the derived LERF theorem are proved and
+exported by the library root `MarshallHall.lean`.

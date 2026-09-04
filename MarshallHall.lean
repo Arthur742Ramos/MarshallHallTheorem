@@ -42,3 +42,26 @@ theorem rank_freeProduct_eq_add {G H : Type u} [Group G] [Group H]
   GeneralGrushko.rank_coprod_eq_add
 
 end MarshallHall
+
+/-! Public LERF surfaces.  The explicit permutation separator is the primary
+finite-quotient formulation; the stabilizer formulation is its existential
+finite-index corollary. -/
+
+theorem freeGroup_finite_permutation_separator
+    {α : Type*} [Finite α]
+    (H : Subgroup (FreeGroup α))
+    [Group.FG H]
+    (g : FreeGroup α)
+    (hg : g ∉ H) :
+    Nonempty (MarshallHall.FinitePermutationSeparator H g) :=
+  MarshallHall.freeGroup_finite_permutation_separator_proved H g hg
+
+theorem freeGroup_subgroup_separable
+    {α : Type*} [Finite α]
+    (H : Subgroup (FreeGroup α))
+    [Group.FG H]
+    (g : FreeGroup α)
+    (hg : g ∉ H) :
+    ∃ K : Subgroup (FreeGroup α),
+      H ≤ K ∧ K.index ≠ 0 ∧ g ∉ K :=
+  MarshallHall.freeGroup_subgroup_separable_proved H g hg

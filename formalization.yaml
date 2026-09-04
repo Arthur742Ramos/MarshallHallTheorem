@@ -10,9 +10,11 @@ project:
     resulting partial generator actions to permutations of a finite state
     set, identifies the connected orbit with a finite core, and extends a
     geodesic spanning tree to obtain an inclusion-compatible free-product
-    decomposition. The repository also proves binary and finite-indexed
-    free-group instances of Grushko--Neumann rank additivity, the
-    arbitrary-factor binary theorem, and the LERF consequence. The
+    decomposition. It also exposes an explicit finite permutation separator
+    for every finitely generated subgroup and element outside it, yielding
+    the LERF consequence. The repository also proves binary and
+    finite-indexed free-group instances of Grushko--Neumann rank additivity,
+    and the arbitrary-factor binary theorem. The
     arbitrary-factor proof is carried by a finite labelled-graph fold,
     source-unfold, and monochromatic-vertex contraction reduction.
   authors:
@@ -38,7 +40,7 @@ sources:
     type: "article"
     location: "https://doi.org/10.4153/CJM-1949-017-2"
     relationship: "formalizes"
-    note: "Classical source for the finite-index extension theorem; the library proves the free-factor conclusion with an explicit inclusion-compatible coproduct witness, together with its LERF consequence."
+    note: "Classical source for the finite-index extension theorem; the library proves the free-factor conclusion with an explicit inclusion-compatible coproduct witness and separately exposes the finite permutation separator yielding its LERF consequence."
     license: "unknown"
     author_endorsement: "not-contacted"
   - title: "Topology of finite graphs"
@@ -89,6 +91,9 @@ related_formalizations:
   - id: "https://github.com/Arthur742Ramos/GraphCoveringTheory"
     relationship: "other"
     note: "The preceding covering-graph and Schreier development motivated the finite-state covering formulation, but is not imported by this repository."
+  - id: "https://github.com/Arthur742Ramos/HowsonIntersectionTheorem"
+    relationship: "other"
+    note: "A downstream Howson intersection development using the Hall and Kurosh layers; it is a separate formalization and is not the selected finite-separator result here."
 
 status:
   scope: >-
@@ -96,8 +101,9 @@ status:
     finitely generated subgroup H of FreeGroup alpha. It produces a subgroup
     K containing H with nonzero natural-number index, a complement, and a
     multiplicative equivalence H * complement ≃* K whose left injection is the
-    actual inclusion of H. The same finite-state engine yields the LERF
-    separator for any element outside H. The rank result covers binary and
+    actual inclusion of H. The same finite-state engine yields an explicit
+    finite permutation separator for any element outside H, and its
+    basepoint stabilizer yields the LERF witness. The rank result covers binary and
     finite indexed free products of free groups on finite types, and the
     arbitrary-factor binary rank theorem is proved for all finitely generated
     groups by strong induction on the finite labelled graph.
@@ -110,6 +116,11 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator.json"
+    - declaration: "LERFChallenge.freeGroup_finite_permutation_separator"
+      file: "LERFSolution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "lerf-comparator.json"
     - declaration: "MarshallHall.rank_binaryFreeProduct"
       file: "MarshallHall/Grushko.lean"
       sorry_count: 0
@@ -138,17 +149,28 @@ automation:
         wall_time: "not tracked"
         spend_usd: "subscription-based"
         hardware: "local machine"
-      prompting_notes: "The theorem was developed against the pinned Lean and Mathlib APIs and checked by the Lean kernel."
+      prompting_notes: >-
+        The theorem was developed against the pinned Lean and Mathlib APIs and
+        checked by the Lean kernel. GPT-5 Codex materially contributed the
+        finite suffix-state construction, permutation completion, and proof
+        scripts; the human authors selected the mathematical target, supplied
+        mathematical supervision, reviewed the formal statements, and retain
+        responsibility for verification and communication.
   spend_usd: "subscription-based"
-  notes: "The public statement is isolated from the finite-core implementation module."
+  notes: >-
+    The public statements are isolated from the finite-core implementation
+    modules. The `lerf-comparator.json` surface selects the explicit finite
+    permutation action, while `comparator.json` preserves the earlier
+    Hall/Grushko surface.
 
 fidelity:
   divergences: >-
-    The public Challenge now selects both the strengthened inclusion-compatible
-    Hall free-factor theorem and the arbitrary-factor binary Grushko--Neumann
-    equality rather than the previously registered LERF corollary. The
-    finite-indexed free-group rank calculation and the LERF separator remain
-    additional proved library results. The finite cover in the Hall
+    The existing public Challenge selects both the strengthened
+    inclusion-compatible Hall free-factor theorem and the arbitrary-factor
+    binary Grushko--Neumann equality. The separate LERF Challenge selects the
+    explicit finite permutation separator, while the finite-indexed free-group
+    rank calculation and the stabilizer-form LERF corollary remain additional
+    proved library results on the main surface. The finite cover in the Hall
     construction is encoded as a finite permutation action on a set of
     left-coset states; the binary arbitrary-factor rank theorem is proved by
     the finite graph reduction in `MarshallHall/GrushkoFull.lean`.
@@ -159,22 +181,34 @@ review:
     - "none"
   notes: >-
     The Challenge theorem is a small statement surface with one deliberate
-    proof hole excluded from the status counts. The Solution and implementation
+    proof hole excluded from the status counts; the separate LERF Challenge has
+    its own statement-only proof hole. The Solutions and implementation
     library contain no proof holes or nonstandard axioms. The finite
     suffix-state construction, permutation completion, basepoint stabilizer,
     finite-index argument, subgroup containment, free-factor retraction, rank
     calculations, and arbitrary-factor graph reduction are checked by Lean's
     kernel; the pinned Comparator replay checks both selected
-    Challenge/Solution correspondences independently.
+    Challenge/Solution correspondences independently, including the separate
+    finite-permutation Comparator surface.
 
 alignment:
   namespace: ""
   statements:
     - source: "Marshall Hall, Subgroups of Finite Index in Free Groups"
-      lean: "freeGroup_subgroup_separable"
-      module: "Solution.lean"
+      lean: "freeGroup_finite_permutation_separator"
+      module: "MarshallHall.lean"
       status: "proved"
-      note: "For a finitely generated subgroup H, the library constructs a finite-index K containing H with an explicit inclusion-compatible free-factor decomposition; this remains the LERF consequence of the Hall construction."
+      note: "For a finitely generated subgroup H and g outside H, the library constructs a finite state type, a homomorphism to its permutation group, an H-fixed base state, and a basepoint moved by g."
+    - source: "Marshall Hall, Subgroups of Finite Index in Free Groups"
+      lean: "freeGroup_subgroup_separable"
+      module: "MarshallHall.lean"
+      status: "proved"
+      note: "The basepoint stabilizer of the explicit finite permutation representation gives a finite-index subgroup containing H but excluding g."
+    - source: "Stallings finite-core method"
+      lean: "LERFChallenge.freeGroup_finite_permutation_separator"
+      module: "LERFSolution.lean"
+      status: "proved"
+      note: "The standalone Palomar surface selects the actual finite permutation representation and its H-fixed/g-moved base state; it is not merely an existential finite-index statement."
     - source: "Marshall Hall, Subgroups of Finite Index in Free Groups"
       lean: "MarshallHall.marshallHall"
       module: "MarshallHall/Hall.lean"
